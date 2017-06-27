@@ -112,7 +112,7 @@ func (h *Handlers) AddHandlerFunc(f HandlerFunc) {
 }
 
 func (h *Handlers) defaultErrFunc(err error) (goon bool) {
-	if err == nil || err == io.EOF {
+	if err == nil || err != io.EOF {
 		return true
 	}
 	return false
@@ -157,8 +157,13 @@ func (h *Handlers) handleSrc(src Source) error {
 
 	for d, err := src.Next(); ; d, err = src.Next() {
 		for e := h.handlers.Front(); e != nil; e = e.Next() {
-			d, err = e.Value.(Handler).Handle(d)
+			if data, _err := e.Value.(Handler).Handle(d); _err == nil {
+				d = data
+			} else {
+				return _err
+			}
 		}
+		// 可能 err == io.EOF, 但是还是有数据产生。
 		if err != nil {
 			return err
 		}

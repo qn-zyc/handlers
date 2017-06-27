@@ -79,7 +79,7 @@ func (mfs *MultiFileSrc) Next() (data interface{}, err error) {
 	data, err = mfs.src[mfs.index].Next()
 	if err != nil {
 		mfs.index++
-		if err == io.EOF {
+		if err == io.EOF && mfs.index < len(mfs.src) {
 			err = nil
 		}
 	}
